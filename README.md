@@ -77,12 +77,50 @@ Backend completo para una aplicación de Pokémon con autenticación JWT, push n
 
 ## Despliegue Online
 
-Para desplegar en producción (Railway, Heroku, etc.):
+### Opción 1: Render (Recomendado)
 
-1. Configura las variables de entorno en el servicio de hosting
-2. Asegúrate de que MongoDB Atlas esté configurado correctamente
-3. Genera nuevas claves VAPID para producción
-4. Actualiza la URL base en el frontend si es necesario
+1. **Crear cuenta en Render**: Ve a [render.com](https://render.com) y regístrate
+2. **Conectar GitHub**: En el dashboard, haz click en "New +" → "Web Service"
+3. **Seleccionar repositorio**: Elige `arisnay/pokemonApp` de tu GitHub
+4. **Configurar servicio**:
+   - **Name**: `pokemon-backend`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+5. **Variables de entorno**: Agrega estas variables en "Environment":
+   ```
+   MONGO_URI=mongodb+srv://tu_usuario:tu_password@cluster.mongodb.net/pokemonapp
+   VAPID_PUBLIC=tu_clave_publica_vapid
+   VAPID_PRIVATE=tu_clave_privada_vapid
+   JWT_SECRET=tu_clave_secreta_muy_segura
+   NODE_ENV=production
+   ```
+6. **Desplegar**: Haz click en "Create Web Service"
+
+### Configuración de MongoDB Atlas
+
+1. Ve a [MongoDB Atlas](https://cloud.mongodb.com)
+2. Crea un cluster gratuito
+3. Configura usuario y contraseña
+4. En "Network Access", permite acceso desde cualquier IP (0.0.0.0/0)
+5. Copia la connection string y reemplaza `<password>` con tu contraseña
+
+### Generar claves VAPID
+
+Para notificaciones push, genera nuevas claves VAPID:
+
+```bash
+npm install -g web-push
+web-push generate-vapid-keys
+```
+
+Usa las claves generadas en las variables de entorno.
+
+### URL de producción
+
+Una vez desplegado, tu API estará disponible en: `https://tu-proyecto.onrender.com`
+
+**Importante**: Actualiza el frontend para usar esta URL en producción.
 
 ## Estructura del Proyecto
 
