@@ -21,6 +21,8 @@ webpush.setVapidDetails(
 
 const pushRoutes = require("./routers/push");
 const friendRoutes = require("./routers/friends");
+const pokemonRoutes = require("./routers/pokemon");
+const userRoutes = require("./routers/users");
 
 const app = express();
 
@@ -35,6 +37,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use("/push", pushRoutes);
 app.use("/friends", friendRoutes);
+app.use("/pokemon", pokemonRoutes);
+app.use("/users", userRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

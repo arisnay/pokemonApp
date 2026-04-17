@@ -29,8 +29,14 @@ Servidor Express + MongoDB + Web Push para notificaciones de invitación y batal
 ## Rutas disponibles
 - `GET /push/public-key`
 - `POST /push/subscribe`
-- `POST /friends/add-friend`
-- `POST /friends/battle`
+- `GET /friends/` - Lista de usuarios
+- `POST /friends/add-friend` - Enviar invitación de amistad
+- `POST /friends/battle` - Iniciar batalla entre usuarios
+- `GET /pokemon/` - Buscar Pokémon (query: name, limit, offset)
+- `GET /pokemon/:id` - Detalles de un Pokémon
+- `GET /users/:email` - Perfil de usuario
+- `POST /users/:email/favorites` - Agregar Pokémon favorito
+- `DELETE /users/:email/favorites/:pokemonId` - Quitar Pokémon favorito
 
 ## Despliegue online
 1. Usa Railway, Render o Vercel para desplegar el backend.
