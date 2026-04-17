@@ -1,11 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
+const { auth } = require("./auth");
 
-// Obtener perfil de usuario
-router.get("/:email", async (req, res) => {
+// Obtener perfil de usuario (protegido)
+router.get("/:email", auth, async (req, res) => {
   try {
     const { email } = req.params;
+
+    // Verificar que el usuario solo pueda ver su propio perfil
+    if (req.user.email !== email) {
+      return res.status(403).json({ error: "No tienes permiso para ver este perfil" });
+    }
+
     const user = await User.findOne({ email }).select("-password -subscription");
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
@@ -17,11 +24,16 @@ router.get("/:email", async (req, res) => {
   }
 });
 
-// Agregar Pokémon a favoritos
-router.post("/:email/favorites", async (req, res) => {
+// Agregar Pokémon a favoritos (protegido)
+router.post("/:email/favorites", auth, async (req, res) => {
   try {
     const { email } = req.params;
     const { pokemonId } = req.body;
+
+    // Verificar que el usuario solo pueda modificar sus propios favoritos
+    if (req.user.email !== email) {
+      return res.status(403).json({ error: "No tienes permiso para modificar este perfil" });
+    }
 
     if (!pokemonId || isNaN(pokemonId)) {
       return res.status(400).json({ error: "pokemonId válido requerido" });
@@ -40,10 +52,15 @@ router.post("/:email/favorites", async (req, res) => {
   }
 });
 
-// Quitar Pokémon de favoritos
-router.delete("/:email/favorites/:pokemonId", async (req, res) => {
+// Quitar Pokémon de favoritos (protegido)
+router.delete("/:email/favorites/:pokemonId", auth, async (req, res) => {
   try {
     const { email, pokemonId } = req.params;
+
+    // Verificar que el usuario solo pueda modificar sus propios favoritos
+    if (req.user.email !== email) {
+      return res.status(403).json({ error: "No tienes permiso para modificar este perfil" });
+    }
 
     const user = await User.findOneAndUpdate(
       { email },

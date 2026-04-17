@@ -1,23 +1,25 @@
 ﻿const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
+const { auth } = require("./auth");
 
 router.get("/public-key", (req, res) => {
   res.json({ publicKey: process.env.VAPID_PUBLIC });
 });
 
-router.post("/subscribe", async (req, res) => {
+router.post("/subscribe", auth, async (req, res) => {
   try {
-    const { email, subscription } = req.body;
+    const { subscription } = req.body;
 
-    if (!email || !subscription) {
-      return res.status(400).json({ error: "email y subscription son requeridos" });
+    if (!subscription) {
+      return res.status(400).json({ error: "subscription es requerida" });
     }
 
+    // Usar el email del usuario autenticado
     await User.findOneAndUpdate(
-      { email },
-      { email, subscription },
-      { upsert: true, new: true }
+      { email: req.user.email },
+      { subscription },
+      { new: true }
     );
 
     res.json({ message: "Suscrito a notificaciones" });

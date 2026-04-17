@@ -23,6 +23,7 @@ const pushRoutes = require("./routers/push");
 const friendRoutes = require("./routers/friends");
 const pokemonRoutes = require("./routers/pokemon");
 const userRoutes = require("./routers/users");
+const { router: authRoutes, auth } = require("./routers/auth");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/push", pushRoutes);
 app.use("/friends", friendRoutes);
 app.use("/pokemon", pokemonRoutes);
 app.use("/users", userRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

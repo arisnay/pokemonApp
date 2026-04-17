@@ -11,8 +11,125 @@ const pokemonResult = document.getElementById("pokemonResult");
 const loadFavoritesBtn = document.getElementById("loadFavoritesBtn");
 const favoritesList = document.getElementById("favoritesList");
 
+// Elementos de autenticación
+const authSection = document.getElementById("authSection");
+const userSection = document.getElementById("userSection");
+const userEmail = document.getElementById("userEmail");
+const registerEmail = document.getElementById("registerEmail");
+const registerPassword = document.getElementById("registerPassword");
+const registerBtn = document.getElementById("registerBtn");
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+let currentUser = null;
+let authToken = null;
+
 function setStatus(message) {
   status.textContent = message;
+}
+
+function showAuthSection() {
+  authSection.style.display = "block";
+  userSection.style.display = "none";
+}
+
+function showUserSection(user) {
+  authSection.style.display = "none";
+  userSection.style.display = "block";
+  userEmail.textContent = user.email;
+  emailInput.value = user.email; // Para las otras funciones
+}
+
+function getAuthHeaders() {
+  return authToken ? { "Authorization": `Bearer ${authToken}` } : {};
+}
+
+async function register() {
+  const email = registerEmail.value.trim();
+  const password = registerPassword.value.trim();
+
+  if (!email || !password) {
+    setStatus("Completa todos los campos.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      setStatus("Registro exitoso. Ahora puedes iniciar sesión.");
+      registerEmail.value = "";
+      registerPassword.value = "";
+    } else {
+      setStatus(result.error || "Error en el registro.");
+    }
+  } catch (error) {
+    setStatus("Error al registrar usuario.");
+  }
+}
+
+async function login() {
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+
+  if (!email || !password) {
+    setStatus("Completa todos los campos.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      authToken = result.token;
+      currentUser = result.user;
+      localStorage.setItem("authToken", authToken);
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      showUserSection(currentUser);
+      setStatus("Inicio de sesión exitoso.");
+      loginEmail.value = "";
+      loginPassword.value = "";
+    } else {
+      setStatus(result.error || "Error en el login.");
+    }
+  } catch (error) {
+    setStatus("Error al iniciar sesión.");
+  }
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("currentUser");
+  showAuthSection();
+  setStatus("Sesión cerrada.");
+}
+
+// Verificar si hay una sesión guardada al cargar la página
+function checkSavedSession() {
+  const savedToken = localStorage.getItem("authToken");
+  const savedUser = localStorage.getItem("currentUser");
+
+  if (savedToken && savedUser) {
+    authToken = savedToken;
+    currentUser = JSON.parse(savedUser);
+    showUserSection(currentUser);
+  } else {
+    showAuthSection();
+  }
 }
 
 async function urlBase64ToUint8Array(base64String) {
@@ -33,9 +150,8 @@ async function registerServiceWorker() {
 }
 
 async function subscribeUser() {
-  const email = emailInput.value.trim();
-  if (!email) {
-    setStatus("Ingresa tu email antes de suscribirte.");
+  if (!currentUser) {
+    setStatus("Debes iniciar sesión primero.");
     return;
   }
 
@@ -53,8 +169,11 @@ async function subscribeUser() {
 
   await fetch("/push/subscribe", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, subscription })
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({ subscription })
   });
 
   setStatus("Suscrito correctamente. Ahora puedes recibir notificaciones.");
@@ -71,7 +190,10 @@ async function sendNotification(endpoint) {
 
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders()
+    },
     body: JSON.stringify({ from, to })
   });
 
@@ -109,16 +231,18 @@ async function searchPokemon() {
 }
 
 async function addToFavorites(pokemonId, name) {
-  const email = emailInput.value.trim();
-  if (!email) {
-    setStatus("Ingresa tu email primero.");
+  if (!currentUser) {
+    setStatus("Debes iniciar sesión para agregar favoritos.");
     return;
   }
 
   try {
-    const response = await fetch(`/users/${email}/favorites`, {
+    const response = await fetch(`/users/${currentUser.email}/favorites`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders()
+      },
       body: JSON.stringify({ pokemonId })
     });
 
@@ -133,14 +257,15 @@ async function addToFavorites(pokemonId, name) {
 }
 
 async function loadFavorites() {
-  const email = emailInput.value.trim();
-  if (!email) {
-    setStatus("Ingresa tu email primero.");
+  if (!currentUser) {
+    setStatus("Debes iniciar sesión para ver tus favoritos.");
     return;
   }
 
   try {
-    const response = await fetch(`/users/${email}`);
+    const response = await fetch(`/users/${currentUser.email}`, {
+      headers: getAuthHeaders()
+    });
     const user = await response.json();
 
     if (response.ok && user.favorites) {
@@ -168,11 +293,15 @@ async function loadFavorites() {
 }
 
 async function removeFromFavorites(pokemonId) {
-  const email = emailInput.value.trim();
+  if (!currentUser) {
+    setStatus("Debes iniciar sesión.");
+    return;
+  }
 
   try {
-    const response = await fetch(`/users/${email}/favorites/${pokemonId}`, {
-      method: "DELETE"
+    const response = await fetch(`/users/${currentUser.email}/favorites/${pokemonId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     const result = await response.json();
@@ -185,8 +314,15 @@ async function removeFromFavorites(pokemonId) {
   }
 }
 
+// Event listeners
+registerBtn.addEventListener("click", register);
+loginBtn.addEventListener("click", login);
+logoutBtn.addEventListener("click", logout);
 subscribeBtn.addEventListener("click", subscribeUser);
 inviteBtn.addEventListener("click", () => sendNotification("/friends/add-friend"));
 battleBtn.addEventListener("click", () => sendNotification("/friends/battle"));
 searchBtn.addEventListener("click", searchPokemon);
 loadFavoritesBtn.addEventListener("click", loadFavorites);
+
+// Inicializar
+checkSavedSession();

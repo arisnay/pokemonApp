@@ -3,13 +3,14 @@ const router = express.Router();
 const User = require("../models/user");
 const webpush = require("web-push");
 const axios = require("axios");
+const { auth } = require("./auth");
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const users = await User.find({}, "email");
   res.json(users);
 });
 
-router.post("/add-friend", async (req, res) => {
+router.post("/add-friend", auth, async (req, res) => {
   try {
     const { from, to } = req.body;
 
@@ -39,7 +40,7 @@ router.post("/add-friend", async (req, res) => {
   }
 });
 
-router.post("/battle", async (req, res) => {
+router.post("/battle", auth, async (req, res) => {
   try {
     const { from, to } = req.body;
 
