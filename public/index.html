@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokémon Push Notifications</title>
+</head>
+<body>
+  <h1>Pokémon Push Server</h1>
+  <p>Registra tu navegador para recibir invitaciones y retos.</p>
+
+  <label>
+    Tu email:
+    <input id="email" type="email" placeholder="tu@email.com" />
+  </label>
+  <button id="subscribeBtn">Suscribirse a notificaciones</button>
+
+  <h2>Enviar prueba</h2>
+  <label>
+    Desde:
+    <input id="from" type="text" placeholder="ash@example.com" />
+  </label>
+  <label>
+    A:
+    <input id="to" type="email" placeholder="misty@example.com" />
+  </label>
+  <button id="inviteBtn">Enviar invitación</button>
+  <button id="battleBtn">Enviar reto</button>
+
+  <div id="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
