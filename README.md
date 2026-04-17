@@ -1,14 +1,21 @@
 ﻿# Pokémon Push Backend
 
-Servidor Express + MongoDB + Web Push para notificaciones de invitación y batalla.
+Servidor Express + MongoDB + Web Push + PokeAPI para notificaciones de invitación y batalla.
+
+## Características
+- ✅ Notificaciones push web para invitaciones y batallas
+- ✅ Integración con PokeAPI para datos de Pokémon
+- ✅ Sistema de Pokémon favoritos por usuario
+- ✅ Lógica de batallas automática entre usuarios
+- ✅ Cliente web de ejemplo con Service Worker
 
 ## Archivos principales
-- `server.js`: configura Express, MongoDB y rutas de push.
-- `routers/push.js`: obtiene la clave pública VAPID y guarda suscripciones.
-- `routers/friends.js`: envía notificaciones cuando llega una invitación o reto.
-- `public/`: cliente de ejemplo con Service Worker.
-
-## Pasos para ejecutar localmente
+- `server.js`: configura Express, MongoDB y rutas
+- `routers/push.js`: gestión de suscripciones push
+- `routers/friends.js`: amigos y batallas
+- `routers/pokemon.js`: integración con PokeAPI
+- `routers/users.js`: perfiles y favoritos
+- `public/`: cliente web de ejemplo
 1. Instalar dependencias:
    ```bash
    npm install
